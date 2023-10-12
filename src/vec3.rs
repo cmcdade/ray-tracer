@@ -44,7 +44,20 @@ impl Vec3 {
     }
 
     pub fn random_bounded(min: f32, max: f32) -> Vec3 {
-        Vec3::new(random_double_bounded(min, max), random_double_bounded(min, max), random_double_bounded(min, max))
+        Vec3::new(
+            random_double_bounded(min, max),
+            random_double_bounded(min, max),
+            random_double_bounded(min, max),
+        )
+    }
+
+    pub fn reflect(self, n: Vec3) -> Vec3 {
+        self - 2.0 * dot(self, n) * n
+    }
+
+    pub fn near_zero(&mut self) -> bool {
+        const EPS: f32 = 1.0e-8;
+        self.x().abs() < EPS && self.y().abs() < EPS && self.z().abs() < EPS
     }
 }
 

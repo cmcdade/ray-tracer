@@ -65,18 +65,24 @@ impl Camera {
             return Color::origin();
         }
         if let Some(rec) = world.hit(r, Interval::new(0.001, std::f32::INFINITY)) {
-            let direction = rec.normal + random_unit_vector();
-            return 0.1 * self.ray_color(Ray::new(rec.p, direction), depth-1, world);
+            if let Some((attenuation, scattered)) = rec.material.scatter(&r, &rec) {
+                attenuation * self.ray_color(scattered, depth - 1, world)
+            } else {
+                Color::origin()
+            }
+        } else {
+            // linear interpolation (lerp) between white and blue
+            // for the background gradient
+            let mut unit_direction = unit_vector(&mut r.direction());
+            let a = 0.5 * (unit_direction.y() + 1.0);
+            (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * Color::new(0.5, 0.7, 1.0)
         }
-        // linear interpolation (lerp) between white and blue
-        // for the background gradient
-        let mut unit_direction = unit_vector(&mut r.direction());
-        let a = 0.5 * (unit_direction.y() + 1.0);
-        (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * Color::new(0.5, 0.7, 1.0)
     }
 
     fn get_ray(&self, i: i32, j: i32) -> Ray {
-        let pixel_center = self.pixel00_loc + (self.pixel_delta_u * (i as f32)) + ((j as f32) * self.pixel_delta_v);
+        let pixel_center = self.pixel00_loc
+            + (self.pixel_delta_u * (i as f32))
+            + ((j as f32) * self.pixel_delta_v);
         let pixel_sample = pixel_center + self.pixel_sample_square();
 
         let ray_origin = self.center;

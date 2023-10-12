@@ -1,11 +1,14 @@
 use crate::interval::Interval;
+use crate::material::Scatter;
 use crate::ray::Ray;
 use crate::vec3::{dot, Point3, Vec3};
 
-#[derive(Debug, Clone, Copy)]
+use std::sync::Arc;
+
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
+    pub material: Arc<dyn Scatter>,
     pub t: f32,
     pub front_face: bool,
 }
@@ -15,7 +18,7 @@ pub struct HittableList {
     objects: Vec<Box<dyn Hittable>>,
 }
 
-pub trait Hittable: Sync {
+pub trait Hittable: Send + Sync {
     fn hit(&self, r: Ray, interval: Interval) -> Option<HitRecord>;
 }
 
@@ -36,6 +39,7 @@ impl HittableList {
     }
 }
 
+/*
 impl Default for HitRecord {
     fn default() -> HitRecord {
         HitRecord {
@@ -46,6 +50,7 @@ impl Default for HitRecord {
         }
     }
 }
+*/
 
 impl Hittable for HittableList {
     fn hit(&self, ray: Ray, ray_t: Interval) -> Option<HitRecord> {
