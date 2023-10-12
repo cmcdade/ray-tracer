@@ -3,7 +3,7 @@ use crate::hittable::{HitRecord, Hittable};
 use crate::interval::Interval;
 use crate::ray::Ray;
 use crate::utils;
-use crate::vec3::{random_on_hemisphere, unit_vector, Point3, Vec3};
+use crate::vec3::{random_unit_vector, unit_vector, Point3, Vec3};
 
 #[derive(Default)]
 pub struct Camera {
@@ -11,6 +11,7 @@ pub struct Camera {
     pub aspect_ratio: f32,
     pub image_width: f32,
     pub samples_per_pixel: i32,
+    pub max_depth: i32,
     image_height: f32,
     // point where all rays originate from, eye point
     center: Point3,
@@ -29,7 +30,7 @@ impl Camera {
                 let mut pixel_color = Color::new(0.0, 0.0, 0.0);
                 for _ in 0..self.samples_per_pixel {
                     let r = self.get_ray(col, row);
-                    pixel_color += self.ray_color(r, world);
+                    pixel_color += self.ray_color(r, self.max_depth, world);
                 }
                 write_color(&mut pixel_color, self.samples_per_pixel);
             }
@@ -59,11 +60,14 @@ impl Camera {
         self.pixel00_loc = viewport_upper_left + 0.5 * (self.pixel_delta_u + self.pixel_delta_v);
     }
 
-    fn ray_color(&self, r: Ray, world: &dyn Hittable) -> Color {
+    fn ray_color(&self, r: Ray, depth: i32, world: &dyn Hittable) -> Color {
         let mut temp_record: HitRecord = HitRecord::default();
-        if world.hit(r, Interval::new(0.0, std::f32::INFINITY), &mut temp_record) {
-            let direction = random_on_hemisphere(temp_record.normal);
-            return 0.5 * self.ray_color(Ray::new(temp_record.p, direction), world);
+        if depth <= 0 {
+            return Color::new(0.0, 0.0, 0.0);
+        }
+        if world.hit(r, Interval::new(0.001, std::f32::INFINITY), &mut temp_record) {
+            let direction = temp_record.normal + random_unit_vector();
+            return 0.1 * self.ray_color(Ray::new(temp_record.p, direction), depth-1, world);
         }
         // linear interpolation (lerp) between white and blue
         // for the background gradient
