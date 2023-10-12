@@ -61,13 +61,12 @@ impl Camera {
     }
 
     fn ray_color(&self, r: Ray, depth: i32, world: &dyn Hittable) -> Color {
-        let mut temp_record: HitRecord = HitRecord::default();
         if depth <= 0 {
-            return Color::new(0.0, 0.0, 0.0);
+            return Color::origin();
         }
-        if world.hit(r, Interval::new(0.001, std::f32::INFINITY), &mut temp_record) {
-            let direction = temp_record.normal + random_unit_vector();
-            return 0.1 * self.ray_color(Ray::new(temp_record.p, direction), depth-1, world);
+        if let Some(rec) = world.hit(r, Interval::new(0.001, std::f32::INFINITY)) {
+            let direction = rec.normal + random_unit_vector();
+            return 0.1 * self.ray_color(Ray::new(rec.p, direction), depth-1, world);
         }
         // linear interpolation (lerp) between white and blue
         // for the background gradient

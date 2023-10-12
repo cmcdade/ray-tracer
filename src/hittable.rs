@@ -16,7 +16,7 @@ pub struct HittableList {
 }
 
 pub trait Hittable: Sync {
-    fn hit(&self, r: Ray, interval: Interval, rec: &mut HitRecord) -> bool;
+    fn hit(&self, r: Ray, interval: Interval) -> Option<HitRecord>;
 }
 
 impl HitRecord {
@@ -48,23 +48,16 @@ impl Default for HitRecord {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, ray: Ray, ray_t: Interval, hit_record: &mut HitRecord) -> bool {
-        let mut temp_record: HitRecord = HitRecord::default();
+    fn hit(&self, ray: Ray, ray_t: Interval) -> Option<HitRecord> {
+        let mut tmp_rec = None;
         let mut closest_so_far = ray_t.max;
-        let mut hit_anything = false;
 
         for object in self.objects.iter() {
-            if object.hit(
-                ray,
-                Interval::new(ray_t.min, closest_so_far),
-                &mut temp_record,
-            ) {
-                hit_anything = true;
-                closest_so_far = temp_record.t;
-                *hit_record = temp_record;
+            if let Some(rec) = object.hit(ray, Interval::new(ray_t.min, closest_so_far)) {
+                closest_so_far = rec.t;
+                tmp_rec = Some(rec);
             }
         }
-
-        hit_anything
+        tmp_rec
     }
 }
