@@ -39,19 +39,6 @@ impl HittableList {
     }
 }
 
-/*
-impl Default for HitRecord {
-    fn default() -> HitRecord {
-        HitRecord {
-            p: Point3::origin(),
-            normal: Vec3::origin(),
-            t: 0.0,
-            front_face: false,
-        }
-    }
-}
-*/
-
 impl Hittable for HittableList {
     fn hit(&self, ray: Ray, ray_t: Interval) -> Option<HitRecord> {
         let mut tmp_rec = None;

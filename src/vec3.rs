@@ -55,6 +55,13 @@ impl Vec3 {
         self - 2.0 * dot(self, n) * n
     }
 
+    pub fn refract(self, n: Vec3, etai_over_etat: f32) -> Vec3 {
+        let cos_theta = dot((-1.0) * self, n).min(1.0);
+        let mut r_out_perp = etai_over_etat * (self + cos_theta * n);
+        let r_out_parallel = -(1.0 - r_out_perp.length().powi(2)).abs().sqrt() * n;
+        r_out_perp + r_out_parallel
+    }
+
     pub fn near_zero(&mut self) -> bool {
         const EPS: f32 = 1.0e-8;
         self.x().abs() < EPS && self.y().abs() < EPS && self.z().abs() < EPS
@@ -86,25 +93,25 @@ pub fn unit_vector(u: &mut Vec3) -> Vec3 {
     }
 }
 
-pub fn random_in_unit_sphere() -> Vec3 {
+pub fn random_in_unit_disk() -> Vec3 {
     loop {
-        let mut p = Vec3::random_bounded(-1.0, 1.0);
+        let mut p = Vec3::new(
+            random_double_bounded(-1.0, 1.0),
+            random_double_bounded(-1.0, 1.0),
+            0.0,
+        );
         if p.length_squared() < 1.0 {
             return p;
         }
     }
 }
 
-pub fn random_unit_vector() -> Vec3 {
-    unit_vector(&mut random_in_unit_sphere())
-}
-
-pub fn random_on_hemisphere(normal: Vec3) -> Vec3 {
-    let on_unit_sphere = random_unit_vector();
-    if dot(on_unit_sphere, normal) > 0.0 {
-        return on_unit_sphere;
-    } else {
-        return -on_unit_sphere;
+pub fn random_in_unit_sphere() -> Vec3 {
+    loop {
+        let mut p = Vec3::random_bounded(-1.0, 1.0);
+        if p.length_squared() < 1.0 {
+            return p;
+        }
     }
 }
 

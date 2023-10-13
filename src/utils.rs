@@ -1,9 +1,7 @@
-use rand::prelude::*;
-
 pub const PI: f32 = 3.14;
 
-pub fn degrees_to_radius(degrees: f32) -> f32 {
-    degrees / PI * 180.0
+pub fn degrees_to_radians(degrees: f32) -> f32 {
+    degrees * PI / 180.0
 }
 
 pub fn random_double() -> f32 {
